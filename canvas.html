@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>html5之canvas(画布)用法</title>
+	<style>
+		body{
+			margin:0;
+			background-color:	#C0C0C0;
+		}
+		#mycanvas{
+			background-color:#FFFFFF;
+			margin:100px auto;
+			display:block;
+
+	</style>
+</head>
+<body>
+
+	<!-- 设置一块画布 -->
+	<canvas id="mycanvas" width="400" height="400"></canvas>
+	<!-- javascript代码区域 -->
+	<script>
+		//获取canvas元素
+		var can=document.getElementById("mycanvas");
+		//创建cantext对象
+		var cxt=can.getContext("2d");
+		
+		//数据记录数组初始化
+		var maprr=[];
+		
+		//方法画地图
+	function map(cxt){
+		//初始化素组元素
+		for(var i=0;i<12;i++){
+			maprr[i]=[];
+			for(var j=0;j<12;j++){
+				maprr[i][j]=null;
+			}
+			
+		}
+
+		for (var i = 1; i < 13; i++) {
+			//画竖线
+			//设置画笔起始坐标
+			cxt.moveTo(30*i,30);
+			//设置画笔结束位置
+			cxt.lineTo(30*i,360);
+
+			//画横线
+			//设置画笔起始坐标
+			cxt.moveTo(30,30*i);
+			//设置画笔结束位置
+			cxt.lineTo(360,30*i);
+			
+		}
+			//开始渲染视图
+			cxt.stroke();
+			//提笔操作
+			cxt.beginPath();
+	}
+		//调用函数画地图
+		map(cxt);
+		
+	
+	
+	// 颜色切换器
+	var colour=0;
+	//addEventListener方法用于指向元素添加时间句柄
+	//参数e表示鼠标事件对象
+	can.addEventListener("click",function(e){
+			//边缘禁止绘画
+			if((e.offsetX<15||e.offsetY<15)||(e.offsetX>375||e.offsetY>375)){
+				return;
+			}
+			//绘制一个圆
+			//设置填充颜色，切换颜色
+			cxt.fillStyle=colour!=0?"Black":"White";
+			//向下取整函数Math.floor(),e.offeetX,Y取整归线中间
+			//e.offsetX+15,先加偏移值，再/30取整
+			var X=Math.floor((e.offsetX+15)/30)*30;
+			var Y=Math.floor((e.offsetY+15)/30)*30;
+			//取整偏移-1,方便查询数组
+			var dx=X/30-1;
+			var dy=Y/30-1
+			//禁止重复绘制棋子
+			if(maprr[dy][dx]!=null){
+				alert("提示:这里已经有棋子了！");
+				return;
+			}
+			//设置绘制路径（圆心坐标轴x，y,半径R，）
+			cxt.arc(X,Y,15,0,Math.PI*2,false);
+			//填充颜色
+			cxt.fill();
+			//开始绘制
+			cxt.stroke();
+			//提笔操作
+			cxt.beginPath();
+			//记录绘制值到数组Y|竖向，X——横向
+			maprr[dy][dx]=colour;
+			//调用函数判断x轴方向计数判断胜负
+			if(ifwin(dy,dx,colour)){
+				var q=colour==0?"白棋":"黑棋";
+				alert("恭喜【"+q+"】获得本场胜利！");
+
+			}
+			//颜色修改
+			colour=colour!=0?0:1;
+			
+			
+	});
+	
+	//横向五步判断函数
+	function ifwin(Y,X,colour){
+		//计数器变量
+		var count=0;
+		//**横向判断9格中的连续个数,循环判断x方向连续个数计数
+		for(var i=1;i<10;i++){
+			//横向取值范围过滤，大于或小于都不进行判断
+			//console.log(Boolean(maprr[Y][X+i-5]));
+			if(maprr[Y][X+i-5]!=undefined){
+				//判断颜色是否相等
+				if(maprr[Y][X+i-5]===colour){
+					//相等则计数器+1
+					count++;
+					
+				}else{
+					//不相等则清0
+					count=0;
+				}
+				//判断是否已经胜利
+				if(count==5){
+					//获胜则清0并返回true
+					count=0;
+					return true;
+				}
+
+			}
+		}
+
+		//**竖向判断9格中的连续个数,循环判断x方向连续个数计数
+		for(var i=1;i<10;i++){
+			//竖向取值范围过滤，大于或小于都不进行判断
+			if(Y+i-5>=0&&Y+i-5<12){
+				//判断颜色是否相等
+				if(maprr[Y+i-5][X]===colour){
+					//相等则计数器+1
+					count++;
+					
+				}else{
+					//不相等则清0
+					count=0;
+				}
+				//判断是否已经胜利
+				if(count==5){
+					//获胜则清0并返回true
+					count=0;
+					return true;
+				}
+			}
+		}
+
+
+		//**右斜向判断9格中的连续个数,循环判断x方向连续个数计数
+		for(var i=1;i<10;i++){
+			//右斜向取值范围过滤，大于或小于都不进行判断
+			if((Y+i-5>=0&&Y+i-5<12)&&(X+i-5>=0&&X+i-5<12)){
+				
+				//判断颜色是否相等
+				if(maprr[Y+i-5][X+i-5]===colour){
+					//相等则计数器+1
+					count++;
+					
+				}else{
+					//不相等则清0
+					count=0;
+				}
+			//判断是否已经胜利
+				if(count==5){
+					//获胜则清0并返回true
+					count=0;
+					return true;
+				}	
+			}
+		}
+
+		//**左斜向判断9格中的连续个数,循环判断x方向连续个数计数
+		for(var i=1;i<10;i++){
+			if((Y+i-5>=0&&Y+i-5<12)&&(X-i+5>=0&&X-i+5<12)){
+				//判断颜色是否相等
+				if(maprr[Y+i-5][X-i+5]===colour){
+					//相等则计数器+1
+					count++;
+				}else{
+					//不相等则清0
+					count=0;
+				}
+				//判断是否已经胜利
+				if(count==5){
+					//获胜则清0并返回true
+					count=0;
+					return true;
+				}
+			}
+		}
+
+
+
+		return false;
+	}
+
+	</script>
+</body>
+</html>
